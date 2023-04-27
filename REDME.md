@@ -31,7 +31,9 @@ pip install -r requirements.txt
 python3 vacancies.py
 ```
 Должна получится похожая таблица 
+
 ![img.png](img.png)
+
 ### Цель проекта
 
 Код написан в образовательных целях на онлайн-курсе для веб-разработчиков [dvmn.org](https://dvmn.org/).
