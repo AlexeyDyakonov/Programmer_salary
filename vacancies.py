@@ -20,9 +20,10 @@ def predict_rub_salary_hh(vacancy):
 
     expected_salary = None
     if vacancy['salary'] and vacancy['salary']['currency'] == 'RUR':
-        expected_salary = predict_salary(vacancy['salary']['from'],
-                                         vacancy['salary']['to']
-                                         )
+        expected_salary = predict_salary(
+            vacancy['salary']['from'],
+            vacancy['salary']['to']
+        )
 
     return expected_salary
 
@@ -32,9 +33,10 @@ def predict_rub_salary_sj(vacancy):
     expected_salary = None
     if (vacancy['payment_from'] or vacancy['payment_to']) \
             and vacancy['currency'] == 'rub':
-        expected_salary = predict_salary(vacancy['payment_from'],
-                                         vacancy['payment_to']
-                                         )
+        expected_salary = predict_salary(
+            vacancy['payment_from'],
+            vacancy['payment_to']
+        )
 
     return expected_salary
 
@@ -54,13 +56,13 @@ def print_table(languages_processed_vacancies, title):
             language_processed_vacancies['vacancies_found'],
             language_processed_vacancies['vacancies_processed'],
             language_processed_vacancies['average_salary']
-            ])
+        ])
 
     table = AsciiTable(table_vacancies_statistics, title)
     print(table.table)
 
 
-def vacancies_hh(programming_languages):
+def process_languages_hh(programming_languages):
 
     hh_url = 'https://api.hh.ru/vacancies'
     languages_processed_vacancies = {}
@@ -70,23 +72,25 @@ def vacancies_hh(programming_languages):
         page = 0
         pages_number = 1
         hh_salaries = []
+        city_id = 1
+        date_from = date.today() - relativedelta(months=1)
 
         while page < pages_number:
 
             hh_params = {
-                        "text": f"Программист {programming_language}",
-                        "area": "1",
-                        'date_from': date.today() - relativedelta(months=1),
-                        'page': page
-                        }
+                "text": f"Программист {programming_language}",
+                "area": city_id,
+                'date_from': date_from,
+                'page': page
+                }
 
             hh_response = requests.get(hh_url, params=hh_params)
             hh_response.raise_for_status()
-            hh_response_json = hh_response.json()
-            pages_number = hh_response_json['pages']
+            hh_formatted_response = hh_response.json()
+            pages_number = hh_formatted_response['pages']
             page += 1
-            sum_vacancies = hh_response_json['found']
-            vacancies = hh_response_json['items']
+            sum_vacancies = hh_formatted_response['found']
+            vacancies = hh_formatted_response['items']
 
             for vacancy in vacancies:
 
@@ -100,21 +104,22 @@ def vacancies_hh(programming_languages):
             average_salary = 'Вакансий не найдено'
 
         languages_processed_vacancies[programming_language] = {
-                    "vacancies_found": sum_vacancies,
-                    "vacancies_processed": len(hh_salaries),
-                    "average_salary": average_salary
-                }
+            "vacancies_found": sum_vacancies,
+            "vacancies_processed": len(hh_salaries),
+            "average_salary": average_salary
+        }
 
     return languages_processed_vacancies
 
 
-def vacanciess_sj(programming_languages, api_key):
+def process_languages_sj(programming_languages, api_key):
+
     sj_url = 'https://api.superjob.ru/2.0/vacancies/'
     languages_processed_vacancies = {}
     sj_headers = {
         'X-Api-App-Id': api_key,
     }
-    moscow_id = 4
+    city_id = 4
     developer_catolog_id = 33
 
     for programming_language in programming_languages:
@@ -128,13 +133,14 @@ def vacanciess_sj(programming_languages, api_key):
             sj_params = {
                 'keyword': f'Программист {programming_language}',
                 'catalogues': developer_catolog_id,
-                'town': moscow_id,
+                'town': city_id,
                 'page': page
             }
-            sj_response = requests.get(sj_url,
-                                       headers=sj_headers,
-                                       params=sj_params
-                                       )
+            sj_response = requests.get(
+                sj_url,
+                headers=sj_headers,
+                params=sj_params
+            )
             sj_formatted_response = sj_response.json()
             more_results = sj_formatted_response['more']
             vacancies = sj_formatted_response['objects']
@@ -165,10 +171,9 @@ if __name__ == "__main__":
     load_dotenv()
     sj_api_key = os.environ['SJ_API_KEY']
     programming_languages = [
-                            'Java',
-                            'Python',
-                            ]
-    processed_languages_hh = vacancies_hh(programming_languages)
-    processed_languages_sj = vacanciess_sj(programming_languages, sj_api_key)
+        'Java', 'Python'
+    ]
+    processed_languages_hh = process_languages_hh(programming_languages)
+    processed_languages_sj = process_languages_sj(programming_languages, sj_api_key)
     print_table(processed_languages_hh, 'HeadHunter Moscow')
     print_table(processed_languages_sj, 'SuperJob Moscow')
