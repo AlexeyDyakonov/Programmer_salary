@@ -66,6 +66,7 @@ def process_languages_hh(programming_languages):
 
     hh_url = 'https://api.hh.ru/vacancies'
     languages_processed_vacancies = {}
+    date_from = date.today() - relativedelta(months=1)
 
     for programming_language in programming_languages:
 
@@ -73,7 +74,6 @@ def process_languages_hh(programming_languages):
         pages_number = 1
         hh_salaries = []
         city_id = 1
-        date_from = date.today() - relativedelta(months=1)
 
         while page < pages_number:
 
