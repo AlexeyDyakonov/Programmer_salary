@@ -89,7 +89,7 @@ def process_languages_hh(programming_languages):
             hh_formatted_response = hh_response.json()
             pages_number = hh_formatted_response['pages']
             page += 1
-            sum_vacancies = hh_formatted_response['found']
+            vacancies_count = hh_formatted_response['found']
             vacancies = hh_formatted_response['items']
 
             for vacancy in vacancies:
@@ -104,7 +104,7 @@ def process_languages_hh(programming_languages):
             average_salary = 'Вакансий не найдено'
 
         languages_processed_vacancies[programming_language] = {
-            "vacancies_found": sum_vacancies,
+            "vacancies_found": vacancies_count,
             "vacancies_processed": len(hh_salaries),
             "average_salary": average_salary
         }
